@@ -24,6 +24,7 @@ const useSigner = () => useContext(SignerContext)
     useEffect(() => {
         const web3model = new Web3Model();
         if(web3model.cachedProvider) connectWallet();
+        window.ethereum.on("accountsChanged", connectWallet);
     }, [])
 
     const connectWallet = async () => {

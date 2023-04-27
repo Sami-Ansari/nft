@@ -11,7 +11,7 @@ const TextArea = (props: TextAreaProps) => {
 
   return (
     <textarea
-      className={classNames("flex-grow resize-none rounded border px-2 py-1", {
+      className={classNames("flex-grow resize-none rounded border px-2 py-1 bg-slate-900", {
         "border-gray-300": !error,
         "border-red-500": error,
       })}

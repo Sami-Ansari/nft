@@ -4,7 +4,9 @@
 
 html,
 body {
-  @apply m-0 h-screen w-screen overflow-hidden p-0;
+  @apply m-0 h-screen w-screen overflow-hidden p-0 ;
+  /* background-color: rgb(3, 5, 8); */
+  
 }
 
 #__next {

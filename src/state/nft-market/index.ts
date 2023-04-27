@@ -1,17 +1,26 @@
 import { TransactionResponse } from "@ethersproject/abstract-provider";
 import { Transaction } from "@apollo/client";
-import { Contract } from "ethers";
+import { BigNumber, Contract, ethers } from "ethers";
 import { CreationValues } from "modules/CreationPage/CreationForm";
 import { json } from "stream/consumers";
 import NFT_MARKET from '../../../artifacts/contracts/NFtMarket.sol/NFtMarket.json'
 import useSigner from "state/signer";
+import useOwnedNFTs from "./useOwnedNFTs";
+import useOwnedListedNFTs from "./useOwnedListedNFTs";
+import { NFT_MARKET_ADDRESS } from "./config";
+import useListedNFTs from "./useListedNFTs";
 
 
-const NFT_MARKET_ADDRESS = process.env.NEXT_PUBLIC_NFT_MARKET_ADDRESS as string;
+
 
 const useNFTMarket = () => {
     const{signer } = useSigner();
     const nftMarket = new Contract(NFT_MARKET_ADDRESS, NFT_MARKET.abi, signer);
+
+    const ownedNFTs = useOwnedNFTs();
+    const ownedListedNFTs = useOwnedListedNFTs();
+    const listedNFTs = useListedNFTs();
+
     const createNFT = async (values: CreationValues) => {
         try{
         const data = new FormData();
@@ -32,7 +41,28 @@ const useNFTMarket = () => {
         console.log(e);
     }
     };
-    return {createNFT};
+
+    const listNFT = async(tokeID: string, price : BigNumber) => {
+        const transaction: TransactionResponse = await nftMarket.listNFT(
+            tokeID,
+            price
+            );
+        await transaction.wait();
+    };
+    const cancelListing = async(tokeID: string) => {
+        const transaction: TransactionResponse = await nftMarket.cancelListing( tokeID  );
+        await transaction.wait();
+    }
+
+    const buyNFT = async(nft: NFT) => {
+        const transaction: TransactionResponse = await nftMarket.buyNFT( 
+             nft.id, {value : ethers.utils.parseEther(nft.price)} );
+        await transaction.wait();
+    }
+
+
+
+    return {createNFT, listNFT,cancelListing,buyNFT, ...ownedNFTs, ...ownedListedNFTs,...listedNFTs,};
 };
 
 export default useNFTMarket;

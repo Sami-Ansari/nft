@@ -1,7 +1,9 @@
 import classNames from "classnames";
 import { BigNumber } from "ethers";
 import { useEffect, useState } from "react";
+import useNFTMarket from "state/nft-market";
 import { NFT } from "state/nft-market/interfaces";
+import useSigner from "state/signer";
 import { ipfsToHTTPS } from "../helpers";
 import AddressAvatar from "./AddressAvatar";
 import SellPopup from "./SellPopup";
@@ -19,7 +21,8 @@ type NFTCardProps = {
 
 const NFTCard = (props: NFTCardProps) => {
   const { nft, className } = props;
-  const address = "";
+  const {address} = useSigner();
+  const { listNFT , cancelListing , buyNFT} =useNFTMarket();
   const [meta, setMeta] = useState<NFTMetadata>();
   const [loading, setLoading] = useState(false);
   const [sellPopupOpen, setSellPopupOpen] = useState(false);
@@ -53,15 +56,36 @@ const NFTCard = (props: NFTCardProps) => {
   };
 
   const onBuyClicked = async () => {
-    // TODO: buy NFT
+    setLoading(true);
+    try{
+    await buyNFT(nft );
+    } catch(e){
+      console.log(e);
+    }
+    setLoading(false)
   };
 
-  const onCancelClicked = async () => {
-    // TODO: cancel listing
+  const onCancelClicked = async () => { 
+    setLoading(true);
+    try{
+    await cancelListing(nft.id );
+    } catch(e){
+      console.log(e);
+    }
+    setLoading(false)
   };
 
   const onSellConfirmed = async (price: BigNumber) => {
-    // TODO: list NFT
+    setSellPopupOpen(false)  
+    setLoading(true);
+    try{
+    await listNFT(nft.id , price);
+    } catch(e){
+      console.log(e);
+    }
+    setLoading(false)
+    console.log("price ",price);
+      
   };
 
   const forSale = nft.price != "0";
@@ -70,7 +94,7 @@ const NFTCard = (props: NFTCardProps) => {
   return (
     <div
       className={classNames(
-        "flex w-72 flex-shrink-0 flex-col overflow-hidden rounded-xl border font-semibold shadow-sm",
+        "flex w-72 flex-shrink-0 flex-col overflow-hidden rounded-xl border font-semibold shadow-sm ",
         className
       )}
     >
@@ -85,12 +109,12 @@ const NFTCard = (props: NFTCardProps) => {
           loading...
         </div>
       )}
-      <div className="flex flex-col p-4">
-        <p className="text-lg">{meta?.name ?? "..."}</p>
-        <span className="text-sm font-normal">
+      <div className="flex flex-col p-4  ">
+        <p className="text-lg text-white">{meta?.name ?? "..."}</p>
+        <span className="text-sm font-normal text-yellow-400  ">
           {meta?.description ?? "..."}
         </span>
-        <AddressAvatar address={nft.owner} />
+        <AddressAvatar  address={nft.owner} />
       </div>
       <button
         className="group flex h-16 items-center justify-center bg-black text-lg font-semibold text-white"
